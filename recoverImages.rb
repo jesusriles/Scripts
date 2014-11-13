@@ -118,5 +118,5 @@ class Utilities
 	protected :initialize, :readInfo, :findImage, :deleteLogs, :writeToLogs
 end
 
-obj = Utilities.new()
-obj.copyFiles()
+object = Utilities.new()
+object.copyFiles()
