@@ -9,10 +9,11 @@ class Utilities
 
 		@@file = nil
 		@@fileName = 'logs.txt'
-		@@destination = Dir.getwd()
+		@@destination = Dir.getwd().to_s()
 
 		# if logs.txt exist, delete it
-		deleteLogs()
+#		deleteLogs()
+
 	end
 
 	def readInfo(fileName)
@@ -53,29 +54,38 @@ class Utilities
 
 		@@batchsInfo.each do |batch|
 			@@serversInfo.each do |server|
-				@batchLocation = server + batch + '.tiff'
+
+				@batchLocation = server + batch + '.tif'
+
+				puts("looking for #{batch} in server #{server}")
 
 				# if server doesn't exist, try with the next server
-				if(File.directory?(server))
-					writeToLogs(batch, server, 1)
+				if(!File.directory?(server))
+#					writeToLogs(batch, server, 1)
+					puts("can't access this server")
+					exit()
 					next
 				else
 					# if file doesn't exist in this server, try with the next server
-					if(File.exists?(@batchLocation))
-						writeToLogs(batch, server, 2)
+					if(!File.exists?(@batchLocation))
+#						writeToLogs(batch, server, 2)
+						puts("#{@batchLocation} doesn't exists")
 						next
 					else
 						# if image is found, copy to the destination
 						FileUtils.cp(@batchLocation, @@destination)
-						writeToLogs(batch, server, 3)
-						next
+						puts("file copied!")
+#						writeToLogs(batch, server, 3)
+						break
 					end
-				end
+				end	
 			end
 		end
 	end
 
-	def copyFiles()
+	def getInfo()
+
+		puts("destination is > #{@@destination}")
 	
 		# get the info of the .txt
 		@@serversInfo = readInfo("servers.txt")
@@ -95,28 +105,67 @@ class Utilities
 		@@file.close()
 	end
 
-	def writeToLogs(batch, server, opt)
+	# def writeToLogs(batch, server, opt)
 
-		@batch = batch
-		@server = server
+	# 	@batch = batch
+	# 	@server = server
 
-		@@file = File.open(@@fileName, "a")
+	# 	@@file = File.open(@@fileName, "a")
 
-		case opt
-		when 1
-			@@file.write("server: #{server} doesn't exist!")
-		when 2			
-			@@file.write("batch: #{batch} doesn't exist!")
-		when 3
-			@@file.write("****** batch: #{batch} copied! ******")
-		end	
-		@@file.close()
-	end
+	# 	case opt
+	# 	when 1
+	# 		@@file.write("server: #{server} doesn't exist!")
+	# 	when 2			
+	# 		@@file.write("batch: #{batch} doesn't exist!")
+	# 	when 3
+	# 		@@file.write("****** batch: #{batch} copied! ******")
+	# 	end	
+	# 	@@file.close()
+	# end
 
-	public :copyFiles
-	private :initialize, :readInfo, :findImage, :deleteLogs, :writeToLogs
-	protected :initialize, :readInfo, :findImage, :deleteLogs, :writeToLogs
+	public :getInfo
+	private :initialize, :readInfo, :findImage, :deleteLogs	
+	protected :initialize, :readInfo, :findImage, :deleteLogs
 end
 
-object = Utilities.new()
-object.copyFiles()
+class FirstTimeUse
+
+	def self.createFiles
+
+		fileWasCreated = false
+
+		# if 'servers.txt' doesn't exist, create it
+		if(!File.exists?('servers.txt'))
+			# create servers.txt
+			file = File.open("servers.txt", "w")
+			file.write("Elimina esto y escribe los servidores en los que se va a buscar, uno por linea")
+			file.close()	
+
+			puts("file servers.txt was created!")
+			fileWasCreated = true
+		end
+
+		# if 'batchs.txt' doesn't exist, create it
+		if(!File.exists?('batchs.txt'))
+			# create batchs.txt
+			file = File.open("batchs.txt", "w")
+			file.write("Elimina esto y escribe los batchs que se van a buscar, uno por linea")
+			file.close()
+
+			puts("file batchs.txt was created!")
+			fileWasCreated = true
+		end
+
+		if(fileWasCreated)
+			# exit so the user can see the files created
+			exit()
+		end		
+	end	
+end
+
+# create files id doesn't exists
+FirstTimeUse.createFiles()
+
+# run the program
+util = Utilities.new()
+util.getInfo()
