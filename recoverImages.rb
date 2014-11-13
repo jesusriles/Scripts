@@ -1,3 +1,17 @@
+=begin
+The purpose of this file is to recover pictures from servers.
+
+So this is how it works...
+There are 'x' numbers of server (where x > 0)
+There are 'y' numbers of pictures (where y > 0)
+
+I need to find the pictures in those servers. So I place the name of the servers in  servers.txt file 
+and the name of the pictures in batches.txt.
+
+This script is going to search for each picture in the servers, in case the picture is found, 
+it's going to be copied to the directory where this script is located.
+=end
+
 require 'fileutils'
 
 class Utilities
@@ -89,7 +103,7 @@ class Utilities
 	
 		# get the info of the .txt
 		@@serversInfo = readInfo("servers.txt")
-		@@batchsInfo = readInfo("batchs.txt")
+		@@batchsInfo = readInfo("batches.txt")
 
 		findImage()
 	end
@@ -145,14 +159,14 @@ class FirstTimeUse
 			fileWasCreated = true
 		end
 
-		# if 'batchs.txt' doesn't exist, create it
-		if(!File.exists?('batchs.txt'))
-			# create batchs.txt
-			file = File.open("batchs.txt", "w")
+		# if 'batches.txt' doesn't exist, create it
+		if(!File.exists?('batches.txt'))
+			# create batches.txt
+			file = File.open("batches.txt", "w")
 			file.write("Elimina esto y escribe los batchs que se van a buscar, uno por linea")
 			file.close()
 
-			puts("file batchs.txt was created!")
+			puts("file batches.txt was created!")
 			fileWasCreated = true
 		end
 
