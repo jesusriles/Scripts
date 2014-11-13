@@ -118,5 +118,35 @@ class Utilities
 	protected :initialize, :readInfo, :findImage, :deleteLogs, :writeToLogs
 end
 
-object = Utilities.new()
-object.copyFiles()
+class FirstTimeUse
+
+	def self.createFiles
+
+		# if 'servers.txt' doesn't exist, create it
+		if(!File.exists?('servers.txt'))
+			# create servers.txt
+			file = File.open("servers.txt", "w")
+			file.write("Elimina esto y escribe los servidores en los que se va a buscar, uno por linea")
+			file.close()	
+		end
+
+		# if 'servers.txt' doesn't exist, create it
+		if(!File.exists?('batchs.txt'))
+			# create batchs.txt
+			file = File.open("batchs.txt", "w")
+			file.write("Elimina esto y escribe los batchs que se van a buscar, uno por linea")
+			file.close()
+		end			
+
+		# exit so the user can see the files created
+		exit()
+	end	
+
+end
+
+# create files id doesn't exists
+FirstTimeUse.createFiles()
+
+# run the program
+util = Utilities.new()
+util.copyFiles()
