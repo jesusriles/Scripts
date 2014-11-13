@@ -130,7 +130,7 @@ class FirstTimeUse
 			file.close()	
 		end
 
-		# if 'servers.txt' doesn't exist, create it
+		# if 'batchs.txt' doesn't exist, create it
 		if(!File.exists?('batchs.txt'))
 			# create batchs.txt
 			file = File.open("batchs.txt", "w")
@@ -141,7 +141,6 @@ class FirstTimeUse
 		# exit so the user can see the files created
 		exit()
 	end	
-
 end
 
 # create files id doesn't exists
