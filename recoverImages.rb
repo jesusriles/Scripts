@@ -54,10 +54,20 @@ class Utilities
 		# read file
 		@servers = File.foreach(@fileName).first(10000)
 
-		# delete '\n' in every line
+		
 		@num = 0
 		@servers.each do |server|
-			@array[@num] = server.delete("\n")
+			# delete '\n' and whitespaces in every line
+			@array[@num] = server.delete("\n").delete(" ")
+
+			# if the server doesn't have backslash at the end, add it
+			if(@fileName == @@fileServerName)
+				size = server.size()
+				if(server[size-1] != '\\' && server[size-2] != '\\')
+					@array[@num].insert(-1, '\\')
+				end
+			end
+
 			@num += 1
 		end
 
