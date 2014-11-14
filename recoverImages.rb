@@ -25,9 +25,6 @@ class Utilities
 		@@fileName = 'logs.txt'
 		@@destination = Dir.getwd().to_s()
 
-		# if logs.txt exist, delete it
-#		deleteLogs()
-
 	end
 
 	def readInfo(fileName)
@@ -68,29 +65,28 @@ class Utilities
 	def findImage()
 
 		@@batchsInfo.each do |batch|
+			puts("---------------------")
+			puts("batch> #{batch}")
+			puts("---------------------")
 			@@serversInfo.each do |server|
 
 				@batchLocation = server + batch + '.tif'
 
-				puts("looking for #{batch} in server #{server}")
-
 				# if server doesn't exist, try with the next server
 				if(!File.directory?(server))
-#					writeToLogs(batch, server, 1)
-					puts("can't access this server")
+					puts("[x] can't access this server")
 					exit()
 					next
 				else
 					# if file doesn't exist in this server, try with the next server
 					if(!File.exists?(@batchLocation))
-#						writeToLogs(batch, server, 2)
-						puts("#{@batchLocation} doesn't exists")
+						puts("[] not found in #{@batchLocation} ")
 						next
 					else
 						# if image is found, copy to the destination
 						FileUtils.cp(@batchLocation, @@destination)
-						puts("file copied!")
-#						writeToLogs(batch, server, 3)
+						puts("[!] file copied!")
+						puts("\n\n\n")
 						break
 					end
 				end	
@@ -121,24 +117,6 @@ class Utilities
 		@@file.close()
 
 	end
-
-	# def writeToLogs(batch, server, opt)
-
-	# 	@batch = batch
-	# 	@server = server
-
-	# 	@@file = File.open(@@fileName, "a")
-
-	# 	case opt
-	# 	when 1
-	# 		@@file.write("server: #{server} doesn't exist!")
-	# 	when 2			
-	# 		@@file.write("batch: #{batch} doesn't exist!")
-	# 	when 3
-	# 		@@file.write("****** batch: #{batch} copied! ******")
-	# 	end	
-	# 	@@file.close()
-	# end
 
 	# remove servers that can't be open or doesn't exist
 	def removeUselessServers()
