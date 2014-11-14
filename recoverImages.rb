@@ -62,6 +62,7 @@ class Utilities
 
 		file.close()
 		return @array
+
 	end
 
 	def findImage()
@@ -95,18 +96,18 @@ class Utilities
 				end	
 			end
 		end
+
 	end
 
 	def getInfo()
-
-		puts("destination is > #{@@destination}")
 	
 		# get the info of the .txt
 		@@serversInfo = readInfo("servers.txt")
 		@@batchsInfo = readInfo("batches.txt")
-		removeUselessServers()
 
+		removeUselessServers()
 		findImage()
+
 	end
 
 	def deleteLogs()
@@ -118,6 +119,7 @@ class Utilities
 
 		@@file = File.open(@@fileName, "a")
 		@@file.close()
+
 	end
 
 	# def writeToLogs(batch, server, opt)
@@ -142,31 +144,32 @@ class Utilities
 	def removeUselessServers()
 
 		@deletedServers = Array.new()
-		@@serversInfo.each do |server|
 
-			# if server doesn't exist, remove it!	
+		# servers that can't be accesed, push to '@deletedServers'
+		@@serversInfo.each do |server|
 			if(!File.directory?(server))
-				@@serversInfo.delete(server)
 				@deletedServers.push(server)
 			end
+		end
 
-			# show the removed servers
-			if(@deletedServers.empty?)
-				@deletedServers.each do |server|
-					puts("server> #{server} not found!")
-				end
+		# delete servers
+		@deletedServers.each do |server|
+			@@serversInfo.delete(server)
+			puts("server not found!> #{server}")
+		end
 
-				# check if user want to continue without this servers
-				begin
-					puts("do you want to (c)ontinue or (e)xit?")
-					answer = gets()
-				end while(answer.to_s != "c" || answer.to_s != "e")
+		answer = ""
 
-				if(answer.to_s == "e")
-					exit()
-				end
-			end
-		end		
+		# check if user want to continue without this servers
+		begin
+			puts("do you want to (c)ontinue or (e)xit?")
+			answer = gets().delete("\n")
+		end while(answer != "e" && answer != "c")
+
+		if(answer == "e")
+			exit()
+		end
+
 	end
 
 	public :getInfo
@@ -210,7 +213,7 @@ class FirstTimeUse
 end
 
 # create files if doesn't exists
-#FirstTimeUse.createFiles()
+FirstTimeUse.createFiles()
 
 # run the program
 util = Utilities.new()
