@@ -104,6 +104,7 @@ class Utilities
 		# get the info of the .txt
 		@@serversInfo = readInfo("servers.txt")
 		@@batchsInfo = readInfo("batches.txt")
+		removeUselessServers()
 
 		findImage()
 	end
@@ -137,9 +138,40 @@ class Utilities
 	# 	@@file.close()
 	# end
 
+	# remove servers that can't be open or doesn't exist
+	def removeUselessServers()
+
+		@deletedServers = Array.new()
+		@@serversInfo.each do |server|
+
+			# if server doesn't exist, remove it!	
+			if(!File.directory?(server))
+				@@serversInfo.delete(server)
+				@deletedServers.push(server)
+			end
+
+			# show the removed servers
+			if(@deletedServers.empty?)
+				@deletedServers.each do |server|
+					puts("server> #{server} not found!")
+				end
+
+				# check if user want to continue without this servers
+				begin
+					puts("do you want to (c)ontinue or (e)xit?")
+					answer = gets()
+				end while(answer.to_s != "c" || answer.to_s != "e")
+
+				if(answer.to_s == "e")
+					exit()
+				end
+			end
+		end		
+	end
+
 	public :getInfo
-	private :initialize, :readInfo, :findImage, :deleteLogs	
-	protected :initialize, :readInfo, :findImage, :deleteLogs
+	private :initialize, :readInfo, :findImage, :deleteLogs, :removeUselessServers
+	protected :initialize, :readInfo, :findImage, :deleteLogs, :removeUselessServers
 end
 
 class FirstTimeUse
@@ -177,8 +209,8 @@ class FirstTimeUse
 	end	
 end
 
-# create files id doesn't exists
-FirstTimeUse.createFiles()
+# create files if doesn't exists
+#FirstTimeUse.createFiles()
 
 # run the program
 util = Utilities.new()
