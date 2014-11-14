@@ -18,11 +18,15 @@ class Utilities
 
 	def initialize()
 
-		@@serversInfo = Array.new()
-		@@batchsInfo = Array.new()
+		# name of the .txt files
+		@@fileServerName = "servers.txt"
+		@@fileBatchesName = "batches.txt"
 
-		@@file = nil
-		@@fileName = 'logs.txt'
+		# get the info of the .txt
+		@@serversInfo = readInfo(@@fileServerName)
+		@@batchsInfo = readInfo(@@fileBatchesName)
+		removeUselessServers()
+
 		@@destination = Dir.getwd().to_s()
 
 	end
@@ -95,26 +99,9 @@ class Utilities
 
 	end
 
-	def getInfo()
+	def start()
 	
-		# get the info of the .txt
-		@@serversInfo = readInfo("servers.txt")
-		@@batchsInfo = readInfo("batches.txt")
-
-		removeUselessServers()
 		findImage()
-
-	end
-
-	def deleteLogs()
-
-		# if file exists, delete it!
-		if(File.exists?(@@fileName))
-			File.delete(@@fileName)
-		end
-
-		@@file = File.open(@@fileName, "a")
-		@@file.close()
 
 	end
 
@@ -150,9 +137,9 @@ class Utilities
 
 	end
 
-	public :getInfo
-	private :initialize, :readInfo, :findImage, :deleteLogs, :removeUselessServers
-	protected :initialize, :readInfo, :findImage, :deleteLogs, :removeUselessServers
+	public :start
+	private :initialize, :readInfo, :findImage, :removeUselessServers
+	protected :initialize, :readInfo, :findImage, :removeUselessServers
 end
 
 class FirstTimeUse
@@ -164,9 +151,9 @@ class FirstTimeUse
 		# if 'servers.txt' doesn't exist, create it
 		if(!File.exists?('servers.txt'))
 			# create servers.txt
-			file = File.open("servers.txt", "w")
+			file = File.open(@@fileServerName, "w")
 			file.write("Elimina esto y escribe los servidores en los que se va a buscar, uno por linea")
-			file.close()	
+			file.close()
 
 			puts("file servers.txt was created!")
 			fileWasCreated = true
@@ -175,7 +162,7 @@ class FirstTimeUse
 		# if 'batches.txt' doesn't exist, create it
 		if(!File.exists?('batches.txt'))
 			# create batches.txt
-			file = File.open("batches.txt", "w")
+			file = File.open(@@fileBatchesName, "w")
 			file.write("Elimina esto y escribe los batchs que se van a buscar, uno por linea")
 			file.close()
 
@@ -195,4 +182,4 @@ FirstTimeUse.createFiles()
 
 # run the program
 util = Utilities.new()
-util.getInfo()
+util.start()
