@@ -135,14 +135,16 @@ class Utilities
 
 		answer = ""
 
-		# check if user want to continue without this servers
-		begin
-			puts("do you want to (c)ontinue or (e)xit?")
-			answer = gets().delete("\n")
-		end while(answer != "e" && answer != "c")
+		if(!@deletedServers.empty?)
+			# check if user want to continue without this servers
+			begin
+				puts("do you want to (c)ontinue or (e)xit?")
+				answer = gets().delete("\n")
+			end while(answer != "e" && answer != "c")
 
-		if(answer == "e")
-			exit()
+			if(answer == "e")
+				exit()
+			end
 		end
 
 	end
