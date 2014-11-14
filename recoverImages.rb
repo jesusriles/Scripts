@@ -1,3 +1,17 @@
+=begin
+The purpose of this file is to recover pictures from servers.
+
+So this is how it works...
+There are 'x' numbers of server (where x > 0)
+There are 'y' numbers of pictures (where y > 0)
+
+I need to find the pictures in those servers. So I place the name of the servers in  servers.txt file 
+and the name of the pictures in batches.txt.
+
+This script is going to search for each picture in the servers, in case the picture is found, 
+it's going to be copied to the directory where this script is located.
+=end
+
 require 'fileutils'
 
 class Utilities
@@ -48,6 +62,7 @@ class Utilities
 
 		file.close()
 		return @array
+
 	end
 
 	def findImage()
@@ -81,17 +96,18 @@ class Utilities
 				end	
 			end
 		end
+
 	end
 
 	def getInfo()
-
-		puts("destination is > #{@@destination}")
 	
 		# get the info of the .txt
 		@@serversInfo = readInfo("servers.txt")
-		@@batchsInfo = readInfo("batchs.txt")
+		@@batchsInfo = readInfo("batches.txt")
 
+		removeUselessServers()
 		findImage()
+
 	end
 
 	def deleteLogs()
@@ -103,6 +119,7 @@ class Utilities
 
 		@@file = File.open(@@fileName, "a")
 		@@file.close()
+
 	end
 
 	# def writeToLogs(batch, server, opt)
@@ -123,9 +140,41 @@ class Utilities
 	# 	@@file.close()
 	# end
 
+	# remove servers that can't be open or doesn't exist
+	def removeUselessServers()
+
+		@deletedServers = Array.new()
+
+		# servers that can't be accesed, push to '@deletedServers'
+		@@serversInfo.each do |server|
+			if(!File.directory?(server))
+				@deletedServers.push(server)
+			end
+		end
+
+		# delete servers
+		@deletedServers.each do |server|
+			@@serversInfo.delete(server)
+			puts("server not found!> #{server}")
+		end
+
+		answer = ""
+
+		# check if user want to continue without this servers
+		begin
+			puts("do you want to (c)ontinue or (e)xit?")
+			answer = gets().delete("\n")
+		end while(answer != "e" && answer != "c")
+
+		if(answer == "e")
+			exit()
+		end
+
+	end
+
 	public :getInfo
-	private :initialize, :readInfo, :findImage, :deleteLogs	
-	protected :initialize, :readInfo, :findImage, :deleteLogs
+	private :initialize, :readInfo, :findImage, :deleteLogs, :removeUselessServers
+	protected :initialize, :readInfo, :findImage, :deleteLogs, :removeUselessServers
 end
 
 class FirstTimeUse
@@ -145,14 +194,14 @@ class FirstTimeUse
 			fileWasCreated = true
 		end
 
-		# if 'batchs.txt' doesn't exist, create it
-		if(!File.exists?('batchs.txt'))
-			# create batchs.txt
-			file = File.open("batchs.txt", "w")
+		# if 'batches.txt' doesn't exist, create it
+		if(!File.exists?('batches.txt'))
+			# create batches.txt
+			file = File.open("batches.txt", "w")
 			file.write("Elimina esto y escribe los batchs que se van a buscar, uno por linea")
 			file.close()
 
-			puts("file batchs.txt was created!")
+			puts("file batches.txt was created!")
 			fileWasCreated = true
 		end
 
@@ -163,7 +212,7 @@ class FirstTimeUse
 	end	
 end
 
-# create files id doesn't exists
+# create files if doesn't exists
 FirstTimeUse.createFiles()
 
 # run the program
