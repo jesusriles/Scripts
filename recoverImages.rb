@@ -150,6 +150,7 @@ class Utilities
 	public :start
 	private :initialize, :readInfo, :findImage, :removeUselessServers
 	protected :initialize, :readInfo, :findImage, :removeUselessServers
+	
 end
 
 class FirstTimeUse
