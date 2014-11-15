@@ -203,6 +203,6 @@ end
 # create files if doesn't exists
 FirstTimeUse.createFiles()
 
-# run the program
+# start the program
 util = Utilities.new()
 util.start()
