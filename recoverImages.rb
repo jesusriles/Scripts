@@ -18,15 +18,16 @@ class Utilities
 
 	def initialize()
 
-		@@serversInfo = Array.new()
-		@@batchsInfo = Array.new()
+		# name of the .txt files
+		@@fileServerName = "servers.txt"
+		@@fileBatchesName = "batches.txt"
 
-		@@file = nil
-		@@fileName = 'logs.txt'
+		# get the info of the .txt
+		@@serversInfo = readInfo(@@fileServerName)
+		@@batchsInfo = readInfo(@@fileBatchesName)
+		removeUselessServers()
+
 		@@destination = Dir.getwd().to_s()
-
-		# if logs.txt exist, delete it
-#		deleteLogs()
 
 	end
 
@@ -52,11 +53,20 @@ class Utilities
 
 		# read file
 		@servers = File.foreach(@fileName).first(10000)
-
-		# delete '\n' in every line
+		
 		@num = 0
 		@servers.each do |server|
-			@array[@num] = server.delete("\n")
+			# delete '\n' and whitespaces in every line
+			@array[@num] = server.delete("\n").delete(" ")
+
+			# if the server doesn't have backslash at the end, add it
+			if(@fileName == @@fileServerName)
+				size = server.size()
+				if(server[size-1] != '\\' && server[size-2] != '\\')
+					@array[@num].insert(-1, '\\')
+				end
+			end
+
 			@num += 1
 		end
 
@@ -68,29 +78,28 @@ class Utilities
 	def findImage()
 
 		@@batchsInfo.each do |batch|
+			puts("---------------------")
+			puts("batch> #{batch}")
+			puts("---------------------")
 			@@serversInfo.each do |server|
 
 				@batchLocation = server + batch + '.tif'
 
-				puts("looking for #{batch} in server #{server}")
-
 				# if server doesn't exist, try with the next server
 				if(!File.directory?(server))
-#					writeToLogs(batch, server, 1)
-					puts("can't access this server")
+					puts("[x] can't access this server")
 					exit()
 					next
 				else
 					# if file doesn't exist in this server, try with the next server
 					if(!File.exists?(@batchLocation))
-#						writeToLogs(batch, server, 2)
-						puts("#{@batchLocation} doesn't exists")
+						puts("[] not found in #{@batchLocation} ")
 						next
 					else
 						# if image is found, copy to the destination
 						FileUtils.cp(@batchLocation, @@destination)
-						puts("file copied!")
-#						writeToLogs(batch, server, 3)
+						puts("[!] file copied!")
+						puts("\n\n\n")
 						break
 					end
 				end	
@@ -99,46 +108,11 @@ class Utilities
 
 	end
 
-	def getInfo()
+	def start()
 	
-		# get the info of the .txt
-		@@serversInfo = readInfo("servers.txt")
-		@@batchsInfo = readInfo("batches.txt")
-
-		removeUselessServers()
 		findImage()
 
 	end
-
-	def deleteLogs()
-
-		# if file exists, delete it!
-		if(File.exists?(@@fileName))
-			File.delete(@@fileName)
-		end
-
-		@@file = File.open(@@fileName, "a")
-		@@file.close()
-
-	end
-
-	# def writeToLogs(batch, server, opt)
-
-	# 	@batch = batch
-	# 	@server = server
-
-	# 	@@file = File.open(@@fileName, "a")
-
-	# 	case opt
-	# 	when 1
-	# 		@@file.write("server: #{server} doesn't exist!")
-	# 	when 2			
-	# 		@@file.write("batch: #{batch} doesn't exist!")
-	# 	when 3
-	# 		@@file.write("****** batch: #{batch} copied! ******")
-	# 	end	
-	# 	@@file.close()
-	# end
 
 	# remove servers that can't be open or doesn't exist
 	def removeUselessServers()
@@ -158,23 +132,36 @@ class Utilities
 			puts("server not found!> #{server}")
 		end
 
+		# if all servers were removed, exit()
+		if(@@serversInfo.empty?)
+			puts("\n\n")
+			puts("------------------------------------------------------------------------")
+			puts("[x] there are no more servers, please check carefully the path of the servers and try again")
+			puts("------------------------------------------------------------------------")
+			puts("\n\n")
+			exit()
+		end
+
 		answer = ""
 
-		# check if user want to continue without this servers
-		begin
-			puts("do you want to (c)ontinue or (e)xit?")
-			answer = gets().delete("\n")
-		end while(answer != "e" && answer != "c")
+		if(!@deletedServers.empty?)
+			# check if user want to continue without this servers
+			begin
+				puts("do you want to (c)ontinue or (e)xit?")
+				answer = gets().delete("\n")
+			end while(answer != "e" && answer != "c")
 
-		if(answer == "e")
-			exit()
+			if(answer == "e")
+				exit()
+			end
 		end
 
 	end
 
-	public :getInfo
-	private :initialize, :readInfo, :findImage, :deleteLogs, :removeUselessServers
-	protected :initialize, :readInfo, :findImage, :deleteLogs, :removeUselessServers
+	public :start
+	private :initialize, :readInfo, :findImage, :removeUselessServers
+	protected :initialize, :readInfo, :findImage, :removeUselessServers
+	
 end
 
 class FirstTimeUse
@@ -186,9 +173,9 @@ class FirstTimeUse
 		# if 'servers.txt' doesn't exist, create it
 		if(!File.exists?('servers.txt'))
 			# create servers.txt
-			file = File.open("servers.txt", "w")
+			file = File.open('servers.txt', "w")
 			file.write("Elimina esto y escribe los servidores en los que se va a buscar, uno por linea")
-			file.close()	
+			file.close()
 
 			puts("file servers.txt was created!")
 			fileWasCreated = true
@@ -197,7 +184,7 @@ class FirstTimeUse
 		# if 'batches.txt' doesn't exist, create it
 		if(!File.exists?('batches.txt'))
 			# create batches.txt
-			file = File.open("batches.txt", "w")
+			file = File.open('batches.txt', "w")
 			file.write("Elimina esto y escribe los batchs que se van a buscar, uno por linea")
 			file.close()
 
@@ -210,12 +197,12 @@ class FirstTimeUse
 			exit()
 		end		
 	end	
+
 end
 
 # create files if doesn't exists
 FirstTimeUse.createFiles()
 
-# run the program
+# start the program
 util = Utilities.new()
-util.getInfo()
-
+util.start()
