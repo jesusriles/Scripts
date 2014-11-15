@@ -133,6 +133,16 @@ class Utilities
 			puts("server not found!> #{server}")
 		end
 
+		# if all servers were removed, exit()
+		if(@@serversInfo.empty?)
+			puts("\n\n")
+			puts("------------------------------------------------------------------------")
+			puts("[x] there are no more servers, please check carefully the path of the servers and try again")
+			puts("------------------------------------------------------------------------")
+			puts("\n\n")
+			exit()
+		end
+
 		answer = ""
 
 		if(!@deletedServers.empty?)
@@ -164,7 +174,7 @@ class FirstTimeUse
 		# if 'servers.txt' doesn't exist, create it
 		if(!File.exists?('servers.txt'))
 			# create servers.txt
-			file = File.open(@@fileServerName, "w")
+			file = File.open('servers.txt', "w")
 			file.write("Elimina esto y escribe los servidores en los que se va a buscar, uno por linea")
 			file.close()
 
@@ -175,7 +185,7 @@ class FirstTimeUse
 		# if 'batches.txt' doesn't exist, create it
 		if(!File.exists?('batches.txt'))
 			# create batches.txt
-			file = File.open(@@fileBatchesName, "w")
+			file = File.open('batches.txt', "w")
 			file.write("Elimina esto y escribe los batchs que se van a buscar, uno por linea")
 			file.close()
 
@@ -188,6 +198,7 @@ class FirstTimeUse
 			exit()
 		end		
 	end	
+
 end
 
 # create files if doesn't exists
