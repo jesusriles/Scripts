@@ -53,7 +53,6 @@ class Utilities
 
 		# read file
 		@servers = File.foreach(@fileName).first(10000)
-
 		
 		@num = 0
 		@servers.each do |server|
