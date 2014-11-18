@@ -1,14 +1,7 @@
 =begin
-The purpose of this file is to recover pictures from servers.
+The purpose of this file is to copy files from a server to my computer.
 
-So this is how it works...
-There are 'x' numbers of server (where x > 0)
-There are 'y' numbers of pictures (where y > 0)
-
-I need to find the pictures in those servers. So I place the name of the servers in  servers.txt file 
-and the name of the pictures in batches.txt.
-
-This script is going to search for each picture in the servers, in case the picture is found, 
+This script is going to search for each file in the each server, in case the file is found, 
 it's going to be copied to the directory where this script is located.
 =end
 
