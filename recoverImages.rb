@@ -25,6 +25,13 @@ class Utilities
 		# get the info of the .txt
 		@@serversInfo = readInfo(@@fileServerName)
 		@@batchsInfo = readInfo(@@fileBatchesName)
+
+		# if one of the files is empty, quit
+		if(@@serversInfo.empty? || @@batchsInfo.empty?)
+			puts("#{@@fileServerName} or #{@@fileBatchesName} it's empty!")
+			exit()
+		end
+
 		removeUselessServers()
 
 		@@destination = Dir.getwd().to_s()
