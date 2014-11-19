@@ -21,6 +21,25 @@ class Utilities
 		@@serversInfo = readInfoServer(@@fileServerName)
 		@@batchsInfo = readInfoBatches(@@fileBatchesName)
 
+		# continue at...
+		if($continue != nil)
+
+			$continue << ".tif"
+
+			if(@@batchsInfo.include?($continue))
+				index = @@batchsInfo.index($continue)
+
+				# remove all batches before $continue
+				index.times {
+					@@batchsInfo.shift()
+				}
+
+			else
+				$fileGlobal.puts("[x] Sorry, #{$include} is not in the list...") if($logs)
+				raise("[x] Sorry, #{$include} is not in the list...")
+			end
+		end
+
 		# if one of the files is empty, quit
 		if(@@serversInfo.empty? || @@batchsInfo.empty?)
 			$fileGlobal.puts("[x] #{@@fileServerName} or #{@@fileBatchesName} it's empty!") if($logs)
@@ -266,6 +285,8 @@ end
 
 # global variables
 $logs = false
+$continue = nil
+$ext = nil
 
 opts = GetoptLong.new(
 		["--logs", "-l", GetoptLong::NO_ARGUMENT],					# print logs in a txt file
@@ -282,18 +303,15 @@ def createLogs
 	rescue
 		raise("[x] couldn't create logs!")
 	end
-
 	$logs = true
 end
 
 opts.each { |option, value|
 		case option
 		when "--logs"
-			createLogs()
-		when "--eddy"
-			mode = :call
-			name = "eddy"
-			message = value
+			createLogsFlag()
+		when "--continue"
+			$continue = value.to_s()
 		when "--daniel"
 			mode = :call
 			name = "daniel"
