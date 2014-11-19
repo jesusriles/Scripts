@@ -16,8 +16,8 @@ class Utilities
 		@@fileBatchesName = "batches.txt"
 
 		# get the info of the .txt
-		@@serversInfo = readInfo(@@fileServerName)
-		@@batchsInfo = readInfo(@@fileBatchesName)
+		@@serversInfo = readInfoServer(@@fileServerName)
+		@@batchsInfo = readInfoBatches(@@fileBatchesName)
 
 		# if one of the files is empty, quit
 		if(@@serversInfo.empty? || @@batchsInfo.empty?)
@@ -30,7 +30,7 @@ class Utilities
 
 	end
 
-	def readInfo(fileName)
+	def readInfoServer(fileName)
 
 		@fileName = fileName
 		@servers = Array.new()
@@ -57,12 +57,52 @@ class Utilities
 			@array[@num] = server.delete("\n").delete(" ")
 
 			# if the server doesn't have backslash at the end, add it
-			if(@fileName == @@fileServerName)
-				size = server.size()
-				if(server[size-1] != '\\' && server[size-2] != '\\')
-					@array[@num].insert(-1, '\\')
-				end
+			size = server.size()
+			if(server[size-1] != '\\' && server[size-2] != '\\')
+				@array[@num].insert(-1, '\\')
 			end
+
+			@num += 1
+		end
+
+		file.close()
+		return @array
+
+	end
+
+	def readInfoBatches(fileName)
+
+		@fileName = fileName
+		@servers = Array.new()
+		@array = Array.new()
+
+		@extension = ".tif"
+
+		# check if file exists
+		if(!File.exists?(@fileName))
+			raise("\n\n[x] file #{@fileName} doesn't exist!\n\n")
+		end
+
+		file = File.open(@fileName, "r")
+
+		# check if file is open
+		if(!file)
+			raise("\n\n[x] file couldn't be opened! \n\n")
+		end
+
+		# read file
+		@servers = File.foreach(@fileName).first(10000)
+		
+		@num = 0
+		@servers.each do |server|
+			# delete '\n' and whitespaces in every line
+			@array[@num] = server.delete("\n").delete(" ")
+			
+			# append extension
+			if(!@array[@num].include?("."))
+				@array[@num] << @extension
+			end
+			puts("[after] array num is >>>>>>>> #{@array[@num]}")
 
 			@num += 1
 		end
@@ -80,7 +120,7 @@ class Utilities
 			puts("---------------------")
 			@@serversInfo.each do |server|
 
-				@batchLocation = server + batch + '.tif'
+				@batchLocation = server + batch
 
 				# if server doesn't exist, try with the next server
 				if(!File.directory?(server))
@@ -155,8 +195,8 @@ class Utilities
 	end
 
 	public :start
-	private :initialize, :readInfo, :findImage, :removeUselessServers
-	protected :initialize, :readInfo, :findImage, :removeUselessServers
+	private :initialize, :readInfoServer, :findImage, :removeUselessServers, :readInfoBatches
+	protected :initialize, :readInfoServer, :findImage, :removeUselessServers, :readInfoBatches
 	
 end
 
