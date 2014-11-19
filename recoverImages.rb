@@ -21,8 +21,7 @@ class Utilities
 
 		# if one of the files is empty, quit
 		if(@@serversInfo.empty? || @@batchsInfo.empty?)
-			puts("#{@@fileServerName} or #{@@fileBatchesName} it's empty!")
-			exit()
+			raise("#{@@fileServerName} or #{@@fileBatchesName} it's empty!")
 		end
 
 		removeUselessServers()
@@ -39,16 +38,14 @@ class Utilities
 
 		# check if file exists
 		if(!File.exists?(@fileName))
-			puts("\n\n[x] file #{@fileName} doesn't exist!\n\n")
-			exit()
+			raise("\n\n[x] file #{@fileName} doesn't exist!\n\n")
 		end
 
 		file = File.open(@fileName, "r")
 
 		# check if file is open
 		if(!file)
-			puts("\n\n[x] file couldn't be opened! \n\n")
-			exit()
+			raise("\n\n[x] file couldn't be opened! \n\n")
 		end
 
 		# read file
@@ -87,8 +84,7 @@ class Utilities
 
 				# if server doesn't exist, try with the next server
 				if(!File.directory?(server))
-					puts("[x] can't access this server")
-					exit()
+					raise("[x] can't access this server")
 					next
 				else
 					# if file doesn't exist in this server, try with the next server
