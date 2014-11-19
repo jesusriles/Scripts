@@ -1,14 +1,7 @@
 =begin
-The purpose of this file is to recover pictures from servers.
+The purpose of this file is to copy files from a server to my computer.
 
-So this is how it works...
-There are 'x' numbers of server (where x > 0)
-There are 'y' numbers of pictures (where y > 0)
-
-I need to find the pictures in those servers. So I place the name of the servers in  servers.txt file 
-and the name of the pictures in batches.txt.
-
-This script is going to search for each picture in the servers, in case the picture is found, 
+This script is going to search for each file in the each server, in case the file is found, 
 it's going to be copied to the directory where this script is located.
 =end
 
@@ -23,13 +16,12 @@ class Utilities
 		@@fileBatchesName = "batches.txt"
 
 		# get the info of the .txt
-		@@serversInfo = readInfo(@@fileServerName)
-		@@batchsInfo = readInfo(@@fileBatchesName)
+		@@serversInfo = readInfoServer(@@fileServerName)
+		@@batchsInfo = readInfoBatches(@@fileBatchesName)
 
 		# if one of the files is empty, quit
 		if(@@serversInfo.empty? || @@batchsInfo.empty?)
-			puts("#{@@fileServerName} or #{@@fileBatchesName} it's empty!")
-			exit()
+			raise("#{@@fileServerName} or #{@@fileBatchesName} it's empty!")
 		end
 
 		removeUselessServers()
@@ -38,40 +30,73 @@ class Utilities
 
 	end
 
-	def readInfo(fileName)
+	def readInfoServer(fileName)
 
 		@fileName = fileName
 		@servers = Array.new()
 		@array = Array.new()
 
-		# check if file exists
-		if(!File.exists?(@fileName))
-			puts("\n\n[x] file #{@fileName} doesn't exist!\n\n")
-			exit()
-		end
-
-		file = File.open(@fileName, "r")
-
-		# check if file is open
-		if(!file)
-			puts("\n\n[x] file couldn't be opened! \n\n")
-			exit()
-		end
+		begin
+			file = File.open(@fileName, "r")
+		rescue
+			raise("\n\n[x] file #{@fileName} couldn't be opened!\n\n")
+		end		
 
 		# read file
-		@servers = File.foreach(@fileName).first(10000)
+		@servers = File.foreach(@fileName)
 		
 		@num = 0
 		@servers.each do |server|
 			# delete '\n' and whitespaces in every line
 			@array[@num] = server.delete("\n").delete(" ")
 
-			# if the server doesn't have backslash at the end, add it
-			if(@fileName == @@fileServerName)
-				size = server.size()
+			size = server.size()
+
+			# check if it uses slash or backslash
+			if(server.include?("\\"))
+				# check if it has the slash or backslash at the end, if not, add it
 				if(server[size-1] != '\\' && server[size-2] != '\\')
 					@array[@num].insert(-1, '\\')
-				end
+				end	
+			else
+				if(server[size-1] != '/' && server[size-2] != '/')
+					@array[@num].insert(-1, '/')
+				end	
+			end
+
+			@num += 1
+		end
+
+		file.close()
+		return @array
+
+	end
+
+	def readInfoBatches(fileName)
+
+		@fileName = fileName
+		@batch = Array.new()
+		@array = Array.new()
+
+		@extension = ".tif"
+
+		begin
+			file = File.open(@fileName, "r")
+		rescue
+			raise("\n\n[x] file #{@fileName} couldn't be opened!\n\n")
+		end
+
+		# read file
+		@batch = File.foreach(@fileName)
+		
+		@num = 0
+		@batch.each do |batch|
+			# delete '\n' and whitespaces in every line
+			@array[@num] = batch.delete("\n").delete(" ")
+			
+			# append extension
+			if(!@array[@num].include?("."))
+				@array[@num] << @extension
 			end
 
 			@num += 1
@@ -90,12 +115,11 @@ class Utilities
 			puts("---------------------")
 			@@serversInfo.each do |server|
 
-				@batchLocation = server + batch + '.tif'
+				@batchLocation = server + batch
 
 				# if server doesn't exist, try with the next server
 				if(!File.directory?(server))
-					puts("[x] can't access this server")
-					exit()
+					raise("[x] can't access this server")
 					next
 				else
 					# if file doesn't exist in this server, try with the next server
@@ -104,10 +128,16 @@ class Utilities
 						next
 					else
 						# if image is found, copy to the destination
-						FileUtils.cp(@batchLocation, @@destination)
-						puts("[!] file copied!")
-						puts("\n\n\n")
-						break
+						begin
+							FileUtils.cp(@batchLocation, @@destination)
+						rescue
+							puts("[x] this file couldn't be opened!")
+						else
+							puts("[!] file copied!")
+							puts("\n\n\n")
+							break
+
+						end
 					end
 				end	
 			end
@@ -166,8 +196,8 @@ class Utilities
 	end
 
 	public :start
-	private :initialize, :readInfo, :findImage, :removeUselessServers
-	protected :initialize, :readInfo, :findImage, :removeUselessServers
+	private :initialize, :readInfoServer, :findImage, :removeUselessServers, :readInfoBatches
+	protected :initialize, :readInfoServer, :findImage, :removeUselessServers, :readInfoBatches
 	
 end
 
