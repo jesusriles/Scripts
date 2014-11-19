@@ -36,30 +36,32 @@ class Utilities
 		@servers = Array.new()
 		@array = Array.new()
 
-		# check if file exists
-		if(!File.exists?(@fileName))
-			raise("\n\n[x] file #{@fileName} doesn't exist!\n\n")
-		end
-
-		file = File.open(@fileName, "r")
-
-		# check if file is open
-		if(!file)
-			raise("\n\n[x] file couldn't be opened! \n\n")
-		end
+		begin
+			file = File.open(@fileName, "r")
+		rescue
+			raise("\n\n[x] file #{@fileName} couldn't be opened!\n\n")
+		end		
 
 		# read file
-		@servers = File.foreach(@fileName).first(10000)
+		@servers = File.foreach(@fileName)
 		
 		@num = 0
 		@servers.each do |server|
 			# delete '\n' and whitespaces in every line
 			@array[@num] = server.delete("\n").delete(" ")
 
-			# if the server doesn't have backslash at the end, add it
 			size = server.size()
-			if(server[size-1] != '\\' && server[size-2] != '\\')
-				@array[@num].insert(-1, '\\')
+
+			# check if it uses slash or backslash
+			if(server.include?("\\"))
+				# check if it has the slash or backslash at the end, if not, add it
+				if(server[size-1] != '\\' && server[size-2] != '\\')
+					@array[@num].insert(-1, '\\')
+				end	
+			else
+				if(server[size-1] != '/' && server[size-2] != '/')
+					@array[@num].insert(-1, '/')
+				end	
 			end
 
 			@num += 1
@@ -73,36 +75,29 @@ class Utilities
 	def readInfoBatches(fileName)
 
 		@fileName = fileName
-		@servers = Array.new()
+		@batch = Array.new()
 		@array = Array.new()
 
 		@extension = ".tif"
 
-		# check if file exists
-		if(!File.exists?(@fileName))
-			raise("\n\n[x] file #{@fileName} doesn't exist!\n\n")
-		end
-
-		file = File.open(@fileName, "r")
-
-		# check if file is open
-		if(!file)
-			raise("\n\n[x] file couldn't be opened! \n\n")
+		begin
+			file = File.open(@fileName, "r")
+		rescue
+			raise("\n\n[x] file #{@fileName} couldn't be opened!\n\n")
 		end
 
 		# read file
-		@servers = File.foreach(@fileName).first(10000)
+		@batch = File.foreach(@fileName)
 		
 		@num = 0
-		@servers.each do |server|
+		@batch.each do |batch|
 			# delete '\n' and whitespaces in every line
-			@array[@num] = server.delete("\n").delete(" ")
+			@array[@num] = batch.delete("\n").delete(" ")
 			
 			# append extension
 			if(!@array[@num].include?("."))
 				@array[@num] << @extension
 			end
-			puts("[after] array num is >>>>>>>> #{@array[@num]}")
 
 			@num += 1
 		end
@@ -133,10 +128,16 @@ class Utilities
 						next
 					else
 						# if image is found, copy to the destination
-						FileUtils.cp(@batchLocation, @@destination)
-						puts("[!] file copied!")
-						puts("\n\n\n")
-						break
+						begin
+							FileUtils.cp(@batchLocation, @@destination)
+						rescue
+							puts("[x] this file couldn't be opened!")
+						else
+							puts("[!] file copied!")
+							puts("\n\n\n")
+							break
+
+						end
 					end
 				end	
 			end
