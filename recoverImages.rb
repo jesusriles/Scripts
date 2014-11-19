@@ -6,11 +6,13 @@ it's going to be copied to the directory where this script is located.
 =end
 
 require 'fileutils'
+require 'getoptlong'
 
 class Utilities
 
 	def initialize()
 
+		puts("#{$test}")
 		# name of the .txt files
 		@@fileServerName = "servers.txt"
 		@@fileBatchesName = "batches.txt"
@@ -21,7 +23,8 @@ class Utilities
 
 		# if one of the files is empty, quit
 		if(@@serversInfo.empty? || @@batchsInfo.empty?)
-			raise("#{@@fileServerName} or #{@@fileBatchesName} it's empty!")
+			$fileGlobal.puts("[x] #{@@fileServerName} or #{@@fileBatchesName} it's empty!") if($logs)
+			raise("[x] #{@@fileServerName} or #{@@fileBatchesName} it's empty!")
 		end
 
 		removeUselessServers()
@@ -39,6 +42,7 @@ class Utilities
 		begin
 			file = File.open(@fileName, "r")
 		rescue
+			$fileGlobal.puts("\n\n[x] file #{@fileName} couldn't be opened!\n\n") if($logs)
 			raise("\n\n[x] file #{@fileName} couldn't be opened!\n\n")
 		end		
 
@@ -83,6 +87,7 @@ class Utilities
 		begin
 			file = File.open(@fileName, "r")
 		rescue
+			$fileGlobal.puts("\n\n[x] file #{@fileName} couldn't be opened!\n\n") if($logs)
 			raise("\n\n[x] file #{@fileName} couldn't be opened!\n\n")
 		end
 
@@ -113,17 +118,26 @@ class Utilities
 			puts("---------------------")
 			puts("batch> #{batch}")
 			puts("---------------------")
+
+			if($logs)
+				$fileGlobal.puts("---------------------") 
+				$fileGlobal.puts("batch> #{batch}")
+				$fileGlobal.puts("---------------------")
+			end
+
 			@@serversInfo.each do |server|
 
 				@batchLocation = server + batch
 
 				# if server doesn't exist, try with the next server
 				if(!File.directory?(server))
+					$fileGlobal.puts("[x] can't access this server") if($logs)
 					raise("[x] can't access this server")
 					next
 				else
 					# if file doesn't exist in this server, try with the next server
 					if(!File.exists?(@batchLocation))
+						$fileGlobal.puts("[] not found in #{@batchLocation} ") if($logs)
 						puts("[] not found in #{@batchLocation} ")
 						next
 					else
@@ -131,12 +145,16 @@ class Utilities
 						begin
 							FileUtils.cp(@batchLocation, @@destination)
 						rescue
-							puts("[x] this file couldn't be opened!")
+							$fileGlobal.puts("[x] this file couldn't be copied!") if($logs)
+							puts("[x] this file couldn't be copied!")
 						else
+							if($logs)
+								$fileGlobal.puts("[!] file copied!")
+								$fileGlobal.puts("\n\n\n")
+							end
 							puts("[!] file copied!")
 							puts("\n\n\n")
 							break
-
 						end
 					end
 				end	
@@ -166,7 +184,8 @@ class Utilities
 		# delete servers
 		@deletedServers.each do |server|
 			@@serversInfo.delete(server)
-			puts("server not found!> #{server}")
+			$fileGlobal.puts("[x] server not found!> #{server}") if($logs)
+			puts("[x] server not found!> #{server}")
 		end
 
 		# if all servers were removed, exit()
@@ -176,6 +195,14 @@ class Utilities
 			puts("[x] there are no more servers, please check carefully the path of the servers and try again")
 			puts("------------------------------------------------------------------------")
 			puts("\n\n")
+			
+			if($logs)
+				$fileGlobal.puts("\n\n")
+				$fileGlobal.puts("------------------------------------------------------------------------")
+				$fileGlobal.puts("[x] there are no more servers, please check carefully the path of the servers and try again")
+				$fileGlobal.puts("------------------------------------------------------------------------")
+				$fileGlobal.puts("\n\n")
+			end
 			exit()
 		end
 
@@ -237,9 +264,52 @@ class FirstTimeUse
 
 end
 
+# global variables
+$logs = false
+
+opts = GetoptLong.new(
+		["--logs", "-l", GetoptLong::NO_ARGUMENT],					# print logs in a txt file
+		["--continue", "-c", GetoptLong::REQUIRED_ARGUMENT],		
+		["--extension", "-e", GetoptLong::REQUIRED_ARGUMENT],			
+		["--test", "-t", GetoptLong::NO_ARGUMENT]
+	)
+
+def createLogs
+
+	# create logs file
+	begin
+		$fileGlobal = File.open("logs.txt", "w+")
+	rescue
+		raise("[x] couldn't create logs!")
+	end
+
+	$logs = true
+end
+
+opts.each { |option, value|
+		case option
+		when "--logs"
+			createLogs()
+		when "--eddy"
+			mode = :call
+			name = "eddy"
+			message = value
+		when "--daniel"
+			mode = :call
+			name = "daniel"
+			message = value
+		when "--test"
+			mode = :test
+		end
+	}
+
 # create files if doesn't exists
 FirstTimeUse.createFiles()
 
 # start the program
 util = Utilities.new()
 util.start()
+
+if($logs)
+	$fileGlobal.close()
+end
