@@ -6,22 +6,64 @@ it's going to be copied to the directory where this script is located.
 =end
 
 require 'fileutils'
+require 'getoptlong'
 
 class Utilities
 
 	def initialize()
 
 		# name of the .txt files
-		@@fileServerName = "servers.txt"
-		@@fileBatchesName = "batches.txt"
+		if($fileservers != nil)
+			@@fileServerName = $fileservers
+		else
+			@@fileServerName = "servers.txt"
+			$fileservers = @@fileServerName
+		end		
+		
+		if($filebatches != nil)
+			@@fileBatchesName = $filebatches
+		else
+			@@fileBatchesName = "batches.txt"
+			$filebatches = @@fileBatchesName
+		end
+
+		# create files if doesn't exists
+		FirstTimeUse.createFiles()
 
 		# get the info of the .txt
 		@@serversInfo = readInfoServer(@@fileServerName)
 		@@batchsInfo = readInfoBatches(@@fileBatchesName)
 
+		# continue at...
+		if($continue != nil)
+			continue = $continue.dup
+
+			if($extension != nil)
+				continue << $extension	
+			else
+				continue << ".tif"
+			end
+
+			$continue = continue
+
+			if(@@batchsInfo.include?($continue))
+				index = @@batchsInfo.index($continue)
+
+				# remove all batches before $continue
+				index.times {
+					@@batchsInfo.shift()
+				}
+
+			else
+				$fileGlobal.puts("[x] Sorry, #{$include} is not in the list...") if($logs)
+				raise("[x] Sorry, #{$include} is not in the list...")
+			end
+		end
+
 		# if one of the files is empty, quit
 		if(@@serversInfo.empty? || @@batchsInfo.empty?)
-			raise("#{@@fileServerName} or #{@@fileBatchesName} it's empty!")
+			$fileGlobal.puts("[x] #{@@fileServerName} or #{@@fileBatchesName} it's empty!") if($logs)
+			raise("[x] #{@@fileServerName} or #{@@fileBatchesName} it's empty!")
 		end
 
 		removeUselessServers()
@@ -39,6 +81,7 @@ class Utilities
 		begin
 			file = File.open(@fileName, "r")
 		rescue
+			$fileGlobal.puts("\n\n[x] file #{@fileName} couldn't be opened!\n\n") if($logs)
 			raise("\n\n[x] file #{@fileName} couldn't be opened!\n\n")
 		end		
 
@@ -78,11 +121,16 @@ class Utilities
 		@batch = Array.new()
 		@array = Array.new()
 
-		@extension = ".tif"
+		if($extension != nil)
+			@extension = $extension
+		else
+			@extension = ".tif"
+		end
 
 		begin
 			file = File.open(@fileName, "r")
 		rescue
+			$fileGlobal.puts("\n\n[x] file #{@fileName} couldn't be opened!\n\n") if($logs)
 			raise("\n\n[x] file #{@fileName} couldn't be opened!\n\n")
 		end
 
@@ -113,17 +161,26 @@ class Utilities
 			puts("---------------------")
 			puts("batch> #{batch}")
 			puts("---------------------")
+
+			if($logs)
+				$fileGlobal.puts("---------------------") 
+				$fileGlobal.puts("batch> #{batch}")
+				$fileGlobal.puts("---------------------")
+			end
+
 			@@serversInfo.each do |server|
 
 				@batchLocation = server + batch
 
 				# if server doesn't exist, try with the next server
 				if(!File.directory?(server))
+					$fileGlobal.puts("[x] can't access this server") if($logs)
 					raise("[x] can't access this server")
 					next
 				else
 					# if file doesn't exist in this server, try with the next server
 					if(!File.exists?(@batchLocation))
+						$fileGlobal.puts("[] not found in #{@batchLocation} ") if($logs)
 						puts("[] not found in #{@batchLocation} ")
 						next
 					else
@@ -131,12 +188,16 @@ class Utilities
 						begin
 							FileUtils.cp(@batchLocation, @@destination)
 						rescue
-							puts("[x] this file couldn't be opened!")
+							$fileGlobal.puts("[x] this file couldn't be copied!") if($logs)
+							puts("[x] this file couldn't be copied!")
 						else
+							if($logs)
+								$fileGlobal.puts("[!] file copied!")
+								$fileGlobal.puts("\n\n\n")
+							end
 							puts("[!] file copied!")
 							puts("\n\n\n")
 							break
-
 						end
 					end
 				end	
@@ -166,7 +227,8 @@ class Utilities
 		# delete servers
 		@deletedServers.each do |server|
 			@@serversInfo.delete(server)
-			puts("server not found!> #{server}")
+			$fileGlobal.puts("[x] server not found!> #{server}") if($logs)
+			puts("[x] server not found!> #{server}")
 		end
 
 		# if all servers were removed, exit()
@@ -176,6 +238,14 @@ class Utilities
 			puts("[x] there are no more servers, please check carefully the path of the servers and try again")
 			puts("------------------------------------------------------------------------")
 			puts("\n\n")
+			
+			if($logs)
+				$fileGlobal.puts("\n\n")
+				$fileGlobal.puts("------------------------------------------------------------------------")
+				$fileGlobal.puts("[x] there are no more servers, please check carefully the path of the servers and try again")
+				$fileGlobal.puts("------------------------------------------------------------------------")
+				$fileGlobal.puts("\n\n")
+			end
 			exit()
 		end
 
@@ -208,7 +278,7 @@ class FirstTimeUse
 		fileWasCreated = false
 
 		# if 'servers.txt' doesn't exist, create it
-		if(!File.exists?('servers.txt'))
+		if(!File.exists?($fileservers))
 			# create servers.txt
 			file = File.open('servers.txt', "w")
 			file.write("Elimina esto y escribe los servidores en los que se va a buscar, uno por linea")
@@ -219,7 +289,7 @@ class FirstTimeUse
 		end
 
 		# if 'batches.txt' doesn't exist, create it
-		if(!File.exists?('batches.txt'))
+		if(!File.exists?($filebatches))
 			# create batches.txt
 			file = File.open('batches.txt', "w")
 			file.write("Elimina esto y escribe los batchs que se van a buscar, uno por linea")
@@ -237,9 +307,63 @@ class FirstTimeUse
 
 end
 
-# create files if doesn't exists
-FirstTimeUse.createFiles()
+def createLogs
+
+	# create logs file
+	begin
+		$fileGlobal = File.open("logs.txt", "w+")
+	rescue
+		raise("[x] couldn't create logs!")
+	end
+	$logs = true
+end
+
+# global variables
+$logs = false
+$continue = nil
+$extension = nil
+$fileservers = nil
+$filebatches = nil
+
+opts = GetoptLong.new(
+		["--logs", "-l", GetoptLong::NO_ARGUMENT],
+		["--continue", "-c", GetoptLong::REQUIRED_ARGUMENT],		
+		["--extension", "-e", GetoptLong::REQUIRED_ARGUMENT],
+		["--fileservers", "-s", GetoptLong::REQUIRED_ARGUMENT],
+		["--filebatches", "-b", GetoptLong::REQUIRED_ARGUMENT]
+	)
+
+opts.each { |option, value|
+		case option
+			when "--logs"
+				createLogs()
+
+			when "--continue"
+				$continue = value.to_s()
+
+			when "--extension"
+
+				$extension = value.to_s()
+				local = $extension.dup
+
+				if(!local.include?("."))
+					local.insert(0, '.')
+				end
+
+				$extension = local.dup
+			when "--fileservers"
+				$fileservers = value.to_s()
+
+			when "--filebatches"
+				$filebatches = value.to_s()
+				
+		end
+	}
 
 # start the program
 util = Utilities.new()
 util.start()
+
+if($logs)
+	$fileGlobal.close()
+end
