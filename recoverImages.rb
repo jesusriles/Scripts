@@ -12,10 +12,23 @@ class Utilities
 
 	def initialize()
 
-		puts("#{$test}")
 		# name of the .txt files
-		@@fileServerName = "servers.txt"
-		@@fileBatchesName = "batches.txt"
+		if($fileservers != nil)
+			@@fileServerName = $fileservers
+		else
+			@@fileServerName = "servers.txt"
+			$fileservers = @@fileServerName
+		end		
+		
+		if($filebatches != nil)
+			@@fileBatchesName = $filebatches
+		else
+			@@fileBatchesName = "batches.txt"
+			$filebatches = @@fileBatchesName
+		end
+
+		# create files if doesn't exists
+		FirstTimeUse.createFiles()
 
 		# get the info of the .txt
 		@@serversInfo = readInfoServer(@@fileServerName)
@@ -265,7 +278,7 @@ class FirstTimeUse
 		fileWasCreated = false
 
 		# if 'servers.txt' doesn't exist, create it
-		if(!File.exists?('servers.txt'))
+		if(!File.exists?($fileservers))
 			# create servers.txt
 			file = File.open('servers.txt', "w")
 			file.write("Elimina esto y escribe los servidores en los que se va a buscar, uno por linea")
@@ -276,7 +289,7 @@ class FirstTimeUse
 		end
 
 		# if 'batches.txt' doesn't exist, create it
-		if(!File.exists?('batches.txt'))
+		if(!File.exists?($filebatches))
 			# create batches.txt
 			file = File.open('batches.txt', "w")
 			file.write("Elimina esto y escribe los batchs que se van a buscar, uno por linea")
@@ -309,11 +322,15 @@ end
 $logs = false
 $continue = nil
 $extension = nil
+$fileservers = nil
+$filebatches = nil
 
 opts = GetoptLong.new(
 		["--logs", "-l", GetoptLong::NO_ARGUMENT],
 		["--continue", "-c", GetoptLong::REQUIRED_ARGUMENT],		
-		["--extension", "-e", GetoptLong::REQUIRED_ARGUMENT]
+		["--extension", "-e", GetoptLong::REQUIRED_ARGUMENT],
+		["--fileservers", "-s", GetoptLong::REQUIRED_ARGUMENT],
+		["--filebatches", "-b", GetoptLong::REQUIRED_ARGUMENT]
 	)
 
 opts.each { |option, value|
@@ -323,7 +340,7 @@ opts.each { |option, value|
 
 			when "--continue"
 				$continue = value.to_s()
-				
+
 			when "--extension"
 
 				$extension = value.to_s()
@@ -334,11 +351,14 @@ opts.each { |option, value|
 				end
 
 				$extension = local.dup
+			when "--fileservers"
+				$fileservers = value.to_s()
+
+			when "--filebatches"
+				$filebatches = value.to_s()
+				
 		end
 	}
-
-# create files if doesn't exists
-FirstTimeUse.createFiles()
 
 # start the program
 util = Utilities.new()
