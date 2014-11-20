@@ -9,7 +9,6 @@ require 'fileutils'
 require 'getoptlong'
 
 class Utilities
-
 	def initialize
 		# name of the .txt files
 		if($fileservers != nil)
