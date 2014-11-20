@@ -22,13 +22,17 @@ class Utilities
 		@@batchsInfo = readInfoBatches(@@fileBatchesName)
 
 		# continue at...
-		if($continue != nil)
+		continue = $continue.dup
+
+		if(continue != nil)
 
 			if($extension != nil)
-				$continue << $extension	
+				continue << $extension	
 			else
-				$continue << ".tif"
+				continue << ".tif"
 			end
+
+			$continue = continue
 
 			if(@@batchsInfo.include?($continue))
 				index = @@batchsInfo.index($continue)
@@ -317,7 +321,7 @@ end
 opts.each { |option, value|
 		case option
 			when "--logs"
-				createLogsFlag()
+				createLogs()
 			when "--continue"
 				$continue = value.to_s()
 			when "--extension"
@@ -330,8 +334,6 @@ opts.each { |option, value|
 				end
 
 				$extension = local.dup
-
-				puts("extension is #{$extension}")
 		end
 	}
 
