@@ -10,8 +10,7 @@ require 'getoptlong'
 
 class Utilities
 
-	def initialize()
-
+	def initialize
 		# name of the .txt files
 		if($fileservers != nil)
 			@@fileServerName = $fileservers
@@ -69,11 +68,9 @@ class Utilities
 		removeUselessServers()
 
 		@@destination = Dir.getwd().to_s()
-
 	end
 
 	def readInfoServer(fileName)
-
 		@fileName = fileName
 		@servers = Array.new()
 		@array = Array.new()
@@ -112,11 +109,9 @@ class Utilities
 
 		file.close()
 		return @array
-
 	end
 
 	def readInfoBatches(fileName)
-
 		@fileName = fileName
 		@batch = Array.new()
 		@array = Array.new()
@@ -152,11 +147,9 @@ class Utilities
 
 		file.close()
 		return @array
-
 	end
 
-	def findImage()
-
+	def findImage
 		@@batchsInfo.each do |batch|
 			puts("---------------------")
 			puts("batch> #{batch}")
@@ -203,18 +196,14 @@ class Utilities
 				end	
 			end
 		end
-
 	end
 
-	def start()
-	
+	def start
 		findImage()
-
 	end
 
 	# remove servers that can't be open or doesn't exist
 	def removeUselessServers()
-
 		@deletedServers = Array.new()
 
 		# servers that can't be accesed, push to '@deletedServers'
@@ -262,19 +251,15 @@ class Utilities
 				exit()
 			end
 		end
-
 	end
 
 	public :start
 	private :initialize, :readInfoServer, :findImage, :removeUselessServers, :readInfoBatches
 	protected :initialize, :readInfoServer, :findImage, :removeUselessServers, :readInfoBatches
-	
 end
 
 class FirstTimeUse
-
 	def self.createFiles
-
 		fileWasCreated = false
 
 		# if 'servers.txt' doesn't exist, create it
@@ -304,11 +289,9 @@ class FirstTimeUse
 			exit()
 		end		
 	end	
-
 end
 
 def createLogs
-
 	# create logs file
 	begin
 		$fileGlobal = File.open("logs.txt", "w+")
@@ -325,38 +308,36 @@ $extension = nil
 $fileservers = nil
 $filebatches = nil
 
-opts = GetoptLong.new(
-		["--logs", "-l", GetoptLong::NO_ARGUMENT],
-		["--continue", "-c", GetoptLong::REQUIRED_ARGUMENT],		
-		["--extension", "-e", GetoptLong::REQUIRED_ARGUMENT],
-		["--fileservers", "-s", GetoptLong::REQUIRED_ARGUMENT],
-		["--filebatches", "-b", GetoptLong::REQUIRED_ARGUMENT]
+opts = GetoptLong.new(["--logs", "-l", GetoptLong::NO_ARGUMENT],
+											["--continue", "-c", GetoptLong::REQUIRED_ARGUMENT],		
+											["--extension", "-e", GetoptLong::REQUIRED_ARGUMENT],
+											["--fileservers", "-s", GetoptLong::REQUIRED_ARGUMENT],
+											["--filebatches", "-b", GetoptLong::REQUIRED_ARGUMENT]
 	)
 
 opts.each { |option, value|
 		case option
-			when "--logs"
-				createLogs()
+		when "--logs"
+			createLogs()
 
-			when "--continue"
-				$continue = value.to_s()
+		when "--continue"
+			$continue = value.to_s()
 
-			when "--extension"
+		when "--extension"
 
-				$extension = value.to_s()
-				local = $extension.dup
+			$extension = value.to_s()
+			local = $extension.dup
 
-				if(!local.include?("."))
-					local.insert(0, '.')
-				end
+			if(!local.include?("."))
+				local.insert(0, '.')
+			end
 
-				$extension = local.dup
-			when "--fileservers"
-				$fileservers = value.to_s()
+			$extension = local.dup
+		when "--fileservers"
+			$fileservers = value.to_s()
 
-			when "--filebatches"
-				$filebatches = value.to_s()
-				
+		when "--filebatches"
+			$filebatches = value.to_s()
 		end
 	}
 
