@@ -22,9 +22,8 @@ class Utilities
 		@@batchsInfo = readInfoBatches(@@fileBatchesName)
 
 		# continue at...
-		continue = $continue.dup
-
-		if(continue != nil)
+		if($continue != nil)
+			continue = $continue.dup
 
 			if($extension != nil)
 				continue << $extension	
@@ -312,18 +311,19 @@ $continue = nil
 $extension = nil
 
 opts = GetoptLong.new(
-		["--logs", "-l", GetoptLong::NO_ARGUMENT],					# print logs in a txt file
+		["--logs", "-l", GetoptLong::NO_ARGUMENT],
 		["--continue", "-c", GetoptLong::REQUIRED_ARGUMENT],		
-		["--extension", "-e", GetoptLong::REQUIRED_ARGUMENT],			
-		["--test", "-t", GetoptLong::NO_ARGUMENT]
+		["--extension", "-e", GetoptLong::REQUIRED_ARGUMENT]
 	)
 
 opts.each { |option, value|
 		case option
 			when "--logs"
 				createLogs()
+
 			when "--continue"
 				$continue = value.to_s()
+				
 			when "--extension"
 
 				$extension = value.to_s()
