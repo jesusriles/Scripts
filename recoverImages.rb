@@ -24,7 +24,11 @@ class Utilities
 		# continue at...
 		if($continue != nil)
 
-			$continue << ".tif"
+			if($extension != nil)
+				$continue << $extension	
+			else
+				$continue << ".tif"
+			end
 
 			if(@@batchsInfo.include?($continue))
 				index = @@batchsInfo.index($continue)
@@ -101,7 +105,11 @@ class Utilities
 		@batch = Array.new()
 		@array = Array.new()
 
-		@extension = ".tif"
+		if($extension != nil)
+			@extension = $extension
+		else
+			@extension = ".tif"
+		end
 
 		begin
 			file = File.open(@fileName, "r")
@@ -286,7 +294,7 @@ end
 # global variables
 $logs = false
 $continue = nil
-$ext = nil
+$extension = nil
 
 opts = GetoptLong.new(
 		["--logs", "-l", GetoptLong::NO_ARGUMENT],					# print logs in a txt file
@@ -308,16 +316,22 @@ end
 
 opts.each { |option, value|
 		case option
-		when "--logs"
-			createLogsFlag()
-		when "--continue"
-			$continue = value.to_s()
-		when "--daniel"
-			mode = :call
-			name = "daniel"
-			message = value
-		when "--test"
-			mode = :test
+			when "--logs"
+				createLogsFlag()
+			when "--continue"
+				$continue = value.to_s()
+			when "--extension"
+
+				$extension = value.to_s()
+				local = $extension.dup
+
+				if(!local.include?("."))
+					local.insert(0, '.')
+				end
+
+				$extension = local.dup
+
+				puts("extension is #{$extension}")
 		end
 	}
 
