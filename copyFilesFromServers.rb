@@ -91,7 +91,7 @@ class Utilities
 		@num = 0
 		@servers.each do |server|
 			# delete '\n' and whitespaces in every line
-			@array[@num] = server.delete("\n").delete(" ")
+			@array[@num] = server.delete("\n").delete(" ").delete("	")
 
 			size = server.size()
 
@@ -140,7 +140,7 @@ class Utilities
 		@num = 0
 		@batch.each do |batch|
 			# delete '\n' and whitespaces in every line
-			@array[@num] = batch.delete("\n").delete(" ")
+			@array[@num] = batch.delete("\n").delete(" ").delete("	")
 			
 			# append extension
 			if(!@array[@num].include?("."))
