@@ -295,6 +295,17 @@ class FirstTimeUse
 
 end
 
+def createLogs
+
+	# create logs file
+	begin
+		$fileGlobal = File.open("logs.txt", "w+")
+	rescue
+		raise("[x] couldn't create logs!")
+	end
+	$logs = true
+end
+
 # global variables
 $logs = false
 $continue = nil
@@ -306,17 +317,6 @@ opts = GetoptLong.new(
 		["--extension", "-e", GetoptLong::REQUIRED_ARGUMENT],			
 		["--test", "-t", GetoptLong::NO_ARGUMENT]
 	)
-
-def createLogs
-
-	# create logs file
-	begin
-		$fileGlobal = File.open("logs.txt", "w+")
-	rescue
-		raise("[x] couldn't create logs!")
-	end
-	$logs = true
-end
 
 opts.each { |option, value|
 		case option
