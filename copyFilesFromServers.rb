@@ -185,19 +185,12 @@ class Utilities
 			end
 
 			@@serversInfo.each do |server|
-
 				@batchLocation = server + batch
-
-				# if server doesn't exist, try with the next server
-				if(!File.directory?(server))
-					$fileGlobal.puts("[x] can't access this server") if($logs)
-					raise("[x] can't access this server")
-					next
-				else
+				begin
 					# if file doesn't exist in this server, try with the next server
 					if(!File.exists?(@batchLocation))
-						$fileGlobal.puts("[] not found in #{@batchLocation} ") if($logs)
-						puts("[] not found in #{@batchLocation} ")
+						$fileGlobal.puts("[] not found in #{server} ") if($logs)
+						puts("[] not found in #{server} ")
 						next
 					else
 						# if image is found, copy to the destination
@@ -216,7 +209,12 @@ class Utilities
 							break
 						end
 					end
-				end	
+				rescue
+					# this point should actually never be reached
+					# if something went wrong here, it's probably cause the server couldn't be accessed
+					puts("Something went wrong!!") if($logs)
+					raise("Something went wrong!!")
+				end
 			end
 		end
 	end
@@ -229,7 +227,7 @@ class Utilities
 	def removeUselessServers()
 		@deletedServers = Array.new()
 
-		# servers that can't be accesed, push to '@deletedServers'
+		# servers that can't be accessed, push to '@deletedServers'
 		@@serversInfo.each do |server|
 			if(!File.directory?(server))
 				@deletedServers.push(server)
