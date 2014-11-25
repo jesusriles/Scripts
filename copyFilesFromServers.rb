@@ -172,8 +172,11 @@ class Utilities
 		return @array
 	end
 
-	def findImage
-		@@batchsInfo.each do |batch|
+	def findImage(batchFile, serverFile)
+		@batchFile = batchFile
+		@serverFile = serverFile
+
+		@batchFile.each do |batch|
 			puts("---------------------")
 			puts("batch> #{batch}")
 			puts("---------------------")
@@ -184,7 +187,7 @@ class Utilities
 				$fileGlobal.puts("---------------------")
 			end
 
-			@@serversInfo.each do |server|
+			@serverFile.each do |server|
 				@batchLocation = server + batch
 				begin
 					# if file doesn't exist in this server, try with the next server
@@ -221,21 +224,40 @@ class Utilities
 
 	def start
 		if($threads != nil)
+			# half of batches for each thread
+			@size = @@batchsInfo.size()
+			@sizeHalf = @size/2
+			@counter = 0
+			@batchesTh1 = Array.new()
+			@batchesTh2 = Array.new()
+
+			@@batchsInfo.each do |batch|
+				if(@counter <= @sizeHalf)
+					@batchesTh1.push(batch)
+				else
+					@batchesTh2.push(batch)
+				end
+				@counter += 1
+			end
+
 			# all threads will abort if an exception is raised.
 			Thread.abort_on_exception = true
-
 			begin
 				# create 2 threads
-				thread1 = Thread.new{findImage()}
-				thread2 = Thread.new{findImage()}
-				thread1.join()
-				thread2.join()
+				threads = Array.new()
+				threads[0] = Thread.new{findImage(@batchesTh1, @@serversInfo)}
+				threads[1] = Thread.new{findImage(@batchesTh2, @@serversInfo)}
+
+				threads.each do |thread|
+					thread.join()
+				end
+				
 			rescue
 				puts("[x] couldn't use threads...")
-				findImage()
+				findImage(@@batchsInfo, @@serversInfo)
 			end
 		else
-			findImage()
+			findImage(@@batchsInfo, @@serversInfo)
 		end
 	end
 
@@ -337,16 +359,14 @@ def createLogs
 	$logs = true
 end
 
-# started time
-puts "Started at #{Time.now}"
-
+startTime = Time.now
 # global variables
-$logs = 		false
-$continue = 	nil
-$extension = 	nil
+$logs = 				false
+$continue = 		nil
+$extension = 		nil
 $fileservers = 	nil
 $filebatches = 	nil
-$threads = 		nil
+$threads = 			nil
 
 opts = GetoptLong.new(["--logs", "-l", GetoptLong::NO_ARGUMENT],
 						["--continue", "-c", GetoptLong::REQUIRED_ARGUMENT],		
@@ -379,8 +399,8 @@ opts.each { |option, value|
 		when "--filebatches"
 			$filebatches = value.to_s()
 
-		when "--threads"
-			$threads = true
+		when "--threads"		# using 2 threads
+			$threads = true		
 		end
 	}
 
@@ -392,5 +412,5 @@ if($logs)
 	$fileGlobal.close()
 end
 
-# end time
-puts "Ends at #{Time.now}"
+# time it take's to run the program
+puts "Total time: #{Time.now - startTime}"
