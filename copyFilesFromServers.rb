@@ -220,7 +220,23 @@ class Utilities
 	end
 
 	def start
-		findImage()
+		if($threads != nil)
+			# all threads will abort if an exception is raised.
+			Thread.abort_on_exception = true
+
+			begin
+				# create 2 threads
+				thread1 = Thread.new{findImage()}
+				thread2 = Thread.new{findImage()}
+				thread1.join()
+				thread2.join()
+			rescue
+				puts("[x] couldn't use threads...")
+				findImage()
+			end
+		else
+			findImage()
+		end
 	end
 
 	# remove servers that can't be open or doesn't exist
@@ -325,19 +341,19 @@ end
 puts "Started at #{Time.now}"
 
 # global variables
-$logs = false
-$continue = nil
-$extension = nil
-$fileservers = nil
-$filebatches = nil
-$threads
+$logs = 		false
+$continue = 	nil
+$extension = 	nil
+$fileservers = 	nil
+$filebatches = 	nil
+$threads = 		nil
 
 opts = GetoptLong.new(["--logs", "-l", GetoptLong::NO_ARGUMENT],
-											["--continue", "-c", GetoptLong::REQUIRED_ARGUMENT],		
-											["--extension", "-e", GetoptLong::REQUIRED_ARGUMENT],
-											["--fileservers", "-s", GetoptLong::REQUIRED_ARGUMENT],
-											["--filebatches", "-b", GetoptLong::REQUIRED_ARGUMENT],
-											["--threads", "-t", GetoptLong::NO_ARGUMENT]
+						["--continue", "-c", GetoptLong::REQUIRED_ARGUMENT],		
+						["--extension", "-e", GetoptLong::REQUIRED_ARGUMENT],
+						["--fileservers", "-s", GetoptLong::REQUIRED_ARGUMENT],
+						["--filebatches", "-b", GetoptLong::REQUIRED_ARGUMENT],
+						["--threads", "-t", GetoptLong::NO_ARGUMENT]
 	)
 
 opts.each { |option, value|
@@ -349,15 +365,14 @@ opts.each { |option, value|
 			$continue = value.to_s()
 
 		when "--extension"
-
 			$extension = value.to_s()
 			local = $extension.dup		# can't modify frozen string (runtimeerror)
 
 			if(!local.include?("."))
 				local.insert(0, '.')
 			end
-
 			$extension = local.dup
+
 		when "--fileservers"
 			$fileservers = value.to_s()
 
