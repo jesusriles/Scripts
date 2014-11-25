@@ -321,18 +321,23 @@ def createLogs
 	$logs = true
 end
 
+# started time
+puts "Started at #{Time.now}"
+
 # global variables
 $logs = false
 $continue = nil
 $extension = nil
 $fileservers = nil
 $filebatches = nil
+$threads
 
 opts = GetoptLong.new(["--logs", "-l", GetoptLong::NO_ARGUMENT],
 											["--continue", "-c", GetoptLong::REQUIRED_ARGUMENT],		
 											["--extension", "-e", GetoptLong::REQUIRED_ARGUMENT],
 											["--fileservers", "-s", GetoptLong::REQUIRED_ARGUMENT],
-											["--filebatches", "-b", GetoptLong::REQUIRED_ARGUMENT]
+											["--filebatches", "-b", GetoptLong::REQUIRED_ARGUMENT],
+											["--threads", "-t", GetoptLong::NO_ARGUMENT]
 	)
 
 opts.each { |option, value|
@@ -358,6 +363,9 @@ opts.each { |option, value|
 
 		when "--filebatches"
 			$filebatches = value.to_s()
+
+		when "--threads"
+			$threads = true
 		end
 	}
 
@@ -368,3 +376,6 @@ util.start()
 if($logs)
 	$fileGlobal.close()
 end
+
+# end time
+puts "Ends at #{Time.now}"
