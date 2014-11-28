@@ -5,32 +5,27 @@ This script is going to search for each file in the each server, in case the fil
 it's going to be copied to the directory where this script is located.
 =end
 
+$LOAD_PATH << '.'
 require 'fileutils'
 require 'getoptlong'
+require 'help'
 
 class Utilities
+	include Help
 	def initialize
-		# name of the .txt files
-		if($fileservers != nil)
-			@@fileServerName = $fileservers
-		else
-			@@fileServerName = "servers.txt"
-			$fileservers = @@fileServerName
-		end		
-		
-		if($filebatches != nil)
-			@@fileBatchesName = $filebatches
-		else
-			@@fileBatchesName = "batches.txt"
-			$filebatches = @@fileBatchesName
-		end
+		# get the names of the files
+		@@fileServerName = Help::Files.getFileName($fileservers, "servers.txt")
+		$fileservers = @@fileServerName
+
+		@@fileBatchesName = Help::Files.getFileName($filebatches, "batches.txt")
+		$filebatches = @@fileBatchesName		
 
 		# create files if doesn't exists
-		FirstTimeUse.createFiles()
+		Help::Files.createFiles(@@fileServerName, @@fileBatchesName)
 
-		# get the info of the .txt
-		@@serversInfo = readInfoServer(@@fileServerName)
-		@@batchsInfo = readInfoBatches(@@fileBatchesName)
+		# read the information on the files
+		@@serversInfo = Help::Files.readServersFile(@@fileServerName, $fileGlobal, $logs)
+		@@batchsInfo = Help::Files.readBatchesFile(@@fileBatchesName, $extension, $fileGlobal, $logs)
 
 		# continue at...
 		if($continue != nil)
@@ -74,102 +69,6 @@ class Utilities
 
 		# get the actual dir
 		@@destination = Dir.getwd().to_s()
-	end
-
-	def readInfoServer(fileName)
-		@fileName = fileName
-		@servers = Array.new()
-		@array = Array.new()
-
-		begin
-			file = File.open(@fileName, "r")
-		rescue
-			$fileGlobal.puts("\n\n[x] file #{@fileName} couldn't be opened!\n\n") if($logs)
-			raise("\n\n[x] file #{@fileName} couldn't be opened!\n\n")
-		end		
-
-		# read file
-		@servers = File.foreach(@fileName)
-		
-		@num = 0
-		@servers.each do |server|
-			# delete '\n', tabs and whitespaces in every line
-			@array[@num] = server.delete("\n").delete(" ").delete("	")
-
-			size = server.size()
-
-			# check if it uses slash or backslash
-			if(server.include?("\\"))
-				# check if it has the slash or backslash at the end, if not, add it
-				if(server[size-1] != '\\' && server[size-2] != '\\')
-					@array[@num].insert(-1, '\\')
-				end	
-			else
-				if(server[size-1] != '/' && server[size-2] != '/')
-					@array[@num].insert(-1, '/')
-				end	
-			end
-
-			@num += 1
-		end
-
-		file.close()
-		return @array
-	end
-
-	def readInfoBatches(fileName)
-		@fileName = fileName
-		@batch = Array.new()
-		@array = Array.new()
-		@delete = Array.new()
-
-		# if -e [ext] is not used, then use default (.tif)
-		if($extension != nil)
-			@extension = $extension
-		else
-			@extension = ".tif"
-		end
-
-		begin
-			file = File.open(@fileName, "r")
-		rescue
-			$fileGlobal.puts("\n\n[x] file #{@fileName} couldn't be opened!\n\n") if($logs)
-			raise("\n\n[x] file #{@fileName} couldn't be opened!\n\n")
-		end
-
-		# read file
-		@batch = File.foreach(@fileName)
-		
-		@num = 0
-		@batch.each do |batch|
-			# delete '\n', tabs and whitespaces in every line
-			@array[@num] = batch.delete("\n").delete(" ").delete("	")
-
-			# append extension (if last 4 characters doesn't include the point)
-			begin
-				if(!@array[@num][-4..-1].include?("."))
-					@array[@num] << @extension
-				end
-			rescue
-				$fileGlobal.puts("[] can't append extension to #{@array[@num]}") if($logs)
-				puts("[] can't append extension to #{@array[@num]}")
-
-				# add 'empty' batches to @remove
-				if(@array[@num] == "")
-					@delete.push(@array[@num])
-				end
-				next
-			end
-			@num += 1
-		end
-
-		# delete batches in @remove
-		@delete.each do |batch|
-			@array.delete(batch)
-		end
-
-		file.close()
-		return @array
 	end
 
 	def findImage
@@ -274,41 +173,8 @@ class Utilities
 	end
 
 	public :start
-	private :initialize, :readInfoServer, :findImage, :removeUselessServers, :readInfoBatches
-	protected :initialize, :readInfoServer, :findImage, :removeUselessServers, :readInfoBatches
-end
-
-class FirstTimeUse
-	def self.createFiles
-		fileWasCreated = false
-
-		# if 'servers.txt' doesn't exist, create it
-		if(!File.exists?($fileservers))
-			# create servers.txt
-			file = File.open($fileservers, "w")
-			file.write("Elimina esto y escribe los servidores en los que se va a buscar, uno por linea")
-			file.close()
-
-			puts("file #{$fileservers} was created!")
-			fileWasCreated = true
-		end
-
-		# if 'batches.txt' doesn't exist, create it
-		if(!File.exists?($filebatches))
-			# create batches.txt
-			file = File.open($filebatches, "w")
-			file.write("Elimina esto y escribe los batchs que se van a buscar, uno por linea")
-			file.close()
-
-			puts("file #{filebatches} was created!")
-			fileWasCreated = true
-		end
-
-		if(fileWasCreated)
-			# exit so the user can see the files created
-			exit()
-		end		
-	end	
+	private :initialize, :findImage, :removeUselessServers
+	protected :initialize, :findImage, :removeUselessServers
 end
 
 def createLogs
@@ -368,3 +234,4 @@ util.start()
 if($logs)
 	$fileGlobal.close()
 end
+
