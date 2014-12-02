@@ -145,4 +145,41 @@ module Help
 			return @array
 		end
 	end
+
+	module Min
+		def self.continue(continue, extension, batchsInfo, fileGlobal, logs)
+			@continue = String.new()
+			@continueFrozen = continue
+			@extension = extension
+			@batchsInfo = batchsInfo
+			@fileGlobal = fileGlobal
+			@logs = logs
+
+			begin
+				# if it hasn't an extension, add it
+				if(!@continueFrozen[-4..-1].include?("."))
+
+					if(@extension == nil)
+						@extension = ".tif"
+					end
+					@continue << @continueFrozen << @extension
+				end
+			rescue
+				raise("[x] can't append extension #{@extension} to #{@continue}")
+			end
+
+			if(@batchsInfo.include?(@continue))
+				index = @batchsInfo.index(@continue)
+
+				# remove all batches before @continue
+				index.times {
+					@batchsInfo.shift()
+				}
+				return @batchsInfo
+			else
+				@fileGlobal.puts("[x] Sorry, #{@continue} is not in the list...") if(@logs)
+				raise("[x] Sorry, #{$continue} is not in the list...")
+			end
+		end
+	end
 end
