@@ -27,36 +27,9 @@ class Utilities
 		@@serversInfo = Help::Files.readServersFile(@@fileServerName, $fileGlobal, $logs)
 		@@batchsInfo = Help::Files.readBatchesFile(@@fileBatchesName, $extension, $fileGlobal, $logs)
 
-		# continue at...
+		# handle --continue
 		if($continue != nil)
-			continue = $continue.dup		# can't modify frozen string (runtimeerror)
-
-			begin
-				# if it hasn't an extension, add it
-				if(!$continue[-4..-1].include?("."))
-					if($extension != nil)
-						continue << $extension	
-					else
-						continue << ".tif"
-					end
-				end
-			rescue
-				raise("[x] can't append extension #{$extension} to #{$continue}")
-			end
-
-			$continue = continue
-
-			if(@@batchsInfo.include?($continue))
-				index = @@batchsInfo.index($continue)
-
-				# remove all batches before $continue
-				index.times {
-					@@batchsInfo.shift()
-				}
-			else
-				$fileGlobal.puts("[x] Sorry, #{$continue} is not in the list...") if($logs)
-				raise("[x] Sorry, #{$continue} is not in the list...")
-			end
+			@@batchsInfo = Help::Min.continue($continue, $extension, @@batchsInfo, $fileGlobal, $logs)
 		end
 
 		# if one of the files is empty, quit
