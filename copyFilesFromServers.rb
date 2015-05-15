@@ -321,8 +321,12 @@ def createLogs
 	$logs = true
 end
 
+# START >
+
 # global variables
-$logs = false
+$logs = true	# always create logs
+createLogs()
+
 $continue = nil
 $extension = nil
 $fileservers = nil
